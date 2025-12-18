@@ -13,7 +13,7 @@ function Auth() {
     const [darkMode, setDarkMode] = useState(true);  // Default dark
     const navigate = useNavigate();
 
-    const API_URL = 'http://localhost:5000';
+    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
     const toggleTheme = () => {
         setDarkMode(!darkMode);

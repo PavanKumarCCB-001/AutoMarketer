@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Card, ListGroup, Badge, Button, Collapse } from 'react-bootstrap';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 function DraftHistory({ userEmail, refreshTrigger }) {
   const [drafts, setDrafts] = useState([]);
   const [openDrafts, setOpenDrafts] = useState({});  // Track which are expanded
@@ -13,7 +15,7 @@ function DraftHistory({ userEmail, refreshTrigger }) {
 
   const fetchDrafts = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/drafts?user_email=${userEmail}`);
+      const res = await axios.get(`${API_URL}/drafts?user_email=${userEmail}`);
       setDrafts(res.data);
     } catch (err) {
       console.error(err);
