@@ -6,11 +6,14 @@ from transformers import pipeline   # For HuggingFace fallback
 import os, datetime
 from pytrends.request import TrendReq
 import hashlib  # For password hashing
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for React frontend
 
-genai.configure(api_key='')  # Gemini API key
+genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
 DB_NAME = 'msme.db'
 
 def get_db_connection():
