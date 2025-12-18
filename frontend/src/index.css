@@ -1,0 +1,135 @@
+.auth-container {
+  min-height: 100vh;
+  background: url('/public/images/bg-sunset.jpg') center/cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Dark overlay for better readability */
+.auth-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  /* Dark tint */
+  backdrop-filter: blur(2px);
+}
+
+/* Glass modal */
+.glass-modal {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  padding: 40px 50px;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  color: white;
+}
+
+/* Close button */
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* Input styles */
+.glass-input {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  border-radius: 8px;
+}
+
+.glass-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.glass-input:focus {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: #ff6b35;
+  box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.3);
+  color: white;
+}
+
+.glass-modal:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(255, 107, 53, 0.4) !important;
+  /* Orange glow */
+  border-color: rgba(255, 107, 53, 0.5);
+  transition: all 0.4s ease;
+}
+
+.glass-modal {
+  transition: all 0.4s ease;
+}
+
+/* Checkbox & links */
+.form-check-label,
+.text-muted a {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-size: 28px;
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Light Mode Styles */
+.light-mode {
+  background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.9)),
+    url('/public/images/bg-sunset.jpg') center/cover no-repeat !important;
+}
+
+.light-mode .glass-modal.light {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: black;
+}
+
+.light-mode .glass-input {
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  color: black;
+}
+
+.light-mode .glass-input::placeholder {
+  color: rgba(0, 0, 0, 0.6);
+}
