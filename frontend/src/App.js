@@ -51,9 +51,11 @@ function Dashboard() {
         <Container>
           <Navbar.Brand>AutoMarketer</Navbar.Brand>
           <Nav className="ms-auto">
-            <Nav.Link className="text-light">Welcome, {userEmail}</Nav.Link>
+            <Nav.Link className="text-light">
+  Welcome, {user.username || user.email.split('@')[0] || user.email}
+</Nav.Link>
             <Nav.Link onClick={handleLogout} style={{ cursor: 'pointer' }}>
-              Logout
+                Exit ➡️
             </Nav.Link>
           </Nav>
         </Container>
