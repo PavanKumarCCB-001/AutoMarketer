@@ -438,4 +438,4 @@ def serve_react(path):
         return send_from_directory(static_folder, 'index.html')
 
 port = int(os.environ.get('PORT', 5000))
-app.run(host='1.1.1.1', port=port, debug=True)
+app.run(host='0.0.0.0', port=port, debug=False)
