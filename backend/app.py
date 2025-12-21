@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 import sqlite3
 import requests
@@ -7,11 +7,11 @@ import os
 import datetime
 import hashlib
 from dotenv import load_dotenv
-from flask import send_from_directory
+
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, origins=["*"])  # Allow all for demo (change to your Vercel URL in production)
+CORS(app, origins=["*"])  # Allow all for demo
 
 genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
 
@@ -54,7 +54,7 @@ def hash_password(password):
 def health():
     return jsonify({'status': 'up'})
 
-# Products - GET (filtered by user)
+# Products GET
 @app.route('/products', methods=['GET'])
 def get_products():
     user_email = request.args.get('user_email')
@@ -71,7 +71,7 @@ def get_products():
     conn.close()
     return jsonify([dict(p) for p in products])
 
-# Products - POST
+# Products POST
 @app.route('/products', methods=['POST'])
 def add_product():
     data = request.json
@@ -147,7 +147,6 @@ def generate_content():
     description = product['description'] or ''
     offers = product['offers'] or ''
 
-    # Mock hashtags
     trending_keywords = ['smallbusiness', 'handmade', 'supportlocal', 'shoplocal', 'msme', 'madeinindia', 'artisan', 'entrepreneur']
     if 'wallet' in product_name.lower():
         trending_keywords += ['leatherwallet', 'mensfashion', 'everydaycarry']
@@ -166,14 +165,13 @@ def generate_content():
     content = "Sorry, generation failed."
 
     try:
-        model = genai.GenerativeModel('gemini-2.5-flash')
+        model = genai.GenerativeModel('gemini-1.5-flash-001')  # Stable version
         response = model.generate_content(prompt)
         content = response.text.strip()
     except Exception as e:
         print("Gemini failed:", str(e))
         content = f"Sample {platform} content for {product_name}. {trend_hashtags}"
 
-    # Save draft
     conn.execute('INSERT INTO drafts (type, content, product_id, user_id, generated_at) VALUES (?, ?, ?, ?, ?)',
                  (platform, content, product_id, user_id, datetime.datetime.now().isoformat()))
     conn.commit()
@@ -181,7 +179,7 @@ def generate_content():
 
     return jsonify({'content': content, 'platform': platform, 'product_name': product_name})
 
-# Drafts history
+# Drafts
 @app.route('/drafts', methods=['GET'])
 def get_drafts():
     user_email = request.args.get('user_email')
@@ -204,7 +202,8 @@ def get_drafts():
     conn.close()
     return jsonify([dict(d) for d in drafts])
 
-# Signup
+# Signup & Login (same as yours — good)
+
 @app.route('/signup', methods=['POST'])
 def signup():
     data = request.json
@@ -226,7 +225,6 @@ def signup():
     finally:
         conn.close()
 
-# Login
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
@@ -249,14 +247,13 @@ def login():
     else:
         return jsonify({'error': 'Invalid credentials'}), 401
 
-# Ayrshare - Instagram & LinkedIn
-# Ayrshare - Instagram & LinkedIn
+# Instagram & LinkedIn Post (Fixed — one route only)
 @app.route('/post_social', methods=['POST'])
 def post_social():
     data = request.json
     content = data.get('content')
     platform = data.get('platform')
-    product_name = data.get('product_name', 'product')  # ← Get from frontend
+    product_name = data.get('product_name', 'product')
     api_key = os.getenv('AYRSHARE_API_KEY')
 
     if not content or not platform:
@@ -267,7 +264,6 @@ def post_social():
         "platforms": [platform]
     }
 
-    # Add relevant image for Instagram
     if platform == 'instagram':
         query = product_name.lower().replace(' ', '+')
         image_url = f"https://source.unsplash.com/1080x1080/?{query},product,professional"
@@ -286,74 +282,8 @@ def post_social():
             return jsonify({'error': result}), response.status_code
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-    data = request.json
-    content = data.get('content')
-    platform = data.get('platform')
-    api_key = os.getenv('AYRSHARE_API_KEY')
 
-    if not content or not platform:
-        return jsonify({'error': 'Missing content or platform'}), 400
-
-    payload = {
-        "post": content,
-        "platforms": [platform]
-    }
-
-    # Add image for Instagram (required)
-    if platform == 'instagram':
-        # Random high-quality product image from Unsplash
-        payload["mediaUrls"] = [f"https://source.unsplash.com/1080x1080/?{product_name.lower().replace(' ', '+')},product"]
-
-    try:
-        response = requests.post(
-            "https://app.ayrshare.com/api/post",
-            json=payload,
-            headers={"Authorization": f"Bearer {api_key}"}
-        )
-        result = response.json()
-        if response.status_code == 200:
-            return jsonify({'message': 'Posted successfully!', 'data': result}), 200
-        else:
-            return jsonify({'error': result}), response.status_code
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/generate_and_post_instagram', methods=['POST'])
-def generate_and_post_instagram():
-    data = request.json
-    content = data.get('content')
-    product_description = data.get('product_description', 'product')
-    platform = 'instagram'
-    api_key = os.getenv('AYRSHARE_API_KEY')
-
-    if not content:
-        return jsonify({'error': 'Missing content'}), 400
-
-    # Use high-quality random product image from Unsplash (always works)
-    # You can customize query: ?product, ?wallet, ?phone, ?jewelry
-    query = product_description.lower().replace(' ', '+')
-    image_url = f"https://source.unsplash.com/1080x1080/?{query},product,professional"
-
-    payload = {
-        "post": content,
-        "platforms": [platform],
-        "mediaUrls": [image_url]
-    }
-
-    try:
-        response = requests.post(
-            "https://app.ayrshare.com/api/post",
-            json=payload,
-            headers={"Authorization": f"Bearer {api_key}"}
-        )
-        result = response.json()
-        if response.status_code == 200:
-            return jsonify({'message': 'Posted to Instagram with image!', 'data': result}), 200
-        else:
-            return jsonify({'error': result}), response.status_code
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-# Brevo - Email
+# Email Send
 @app.route('/send_email', methods=['POST'])
 def send_email():
     data = request.json
@@ -364,7 +294,6 @@ def send_email():
     if not content or not recipient:
         return jsonify({'error': 'Missing content or recipient'}), 400
 
-    # Convert plain text to nice HTML with formatting
     html_content = f"""
     <html>
       <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -385,7 +314,7 @@ def send_email():
     """
 
     payload = {
-        "sender": {"name": "AutoMarketer", "email": "gunda.pavan.g@gmail.com"},  # ← Your verified Brevo email
+        "sender": {"name": "AutoMarketer", "email": "gunda.pavan.g@gmail.com"},  # Your verified Brevo email
         "to": [{"email": recipient}],
         "subject": "Exclusive Offer from AutoMarketer",
         "htmlContent": html_content
@@ -400,34 +329,8 @@ def send_email():
         return jsonify(response.json()), response.status_code
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-# Blogger - Blog Post
-@app.route('/post_blog', methods=['POST'])
-def post_blog():
-    data = request.json
-    content = data.get('content')
-    title = data.get('title', 'New Post from AutoMarketer')
-    blog_id = os.getenv('BLOGGER_BLOG_ID')  # Add to .env
-    api_key = os.getenv('BLOGGER_API_KEY')
 
-    if not content:
-        return jsonify({'error': 'Missing content'}), 400
-
-    payload = {
-        "kind": "blogger#post",
-        "title": title,
-        "content": content
-    }
-
-    try:
-        response = requests.post(
-            f"https://www.googleapis.com/blogger/v3/blogs/{blog_id}/posts?key={api_key}",
-            json=payload
-        )
-        return jsonify(response.json()), response.status_code
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-# Serve React App
+# Serve React Static Files
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_react(path):
@@ -437,5 +340,6 @@ def serve_react(path):
     else:
         return send_from_directory(static_folder, 'index.html')
 
-port = int(os.environ.get('PORT', 5000))
-app.run(host='0.0.0.0', port=port, debug=False)
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
