@@ -427,14 +427,15 @@ def post_blog():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# Serve React static files
+# Serve React App
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_react(path):
-    if path != "" and os.path.exists(os.path.join('static', path)):
-        return send_from_directory('static', path)
+    static_folder = os.path.join(os.path.dirname(__file__), 'static')
+    if path != "" and os.path.exists(os.path.join(static_folder, path)):
+        return send_from_directory(static_folder, path)
     else:
-        return send_from_directory('static', 'index.html')
+        return send_from_directory(static_folder, 'index.html')
 
 port = int(os.environ.get('PORT', 5000))
 app.run(host='0.0.0.0', port=port, debug=True)
